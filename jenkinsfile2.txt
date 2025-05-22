@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    environment {
+        # Define environment variables to be passed to the Python script
+        DOCKER_IMAGE = 'your-docker-repo/your-app:latest' // Replace with your actual image
+        CONTAINER_NAME = 'your-app-container'
+        PORT_MAPPING = '8080:80' // HostPort:ContainerPort (e.g., expose container port 80 on host port 8080)
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                # This step is crucial if your Python script is part of your repository
+                git branch: 'main', url: 'https://github.com/your-org/your-repo.git' // Replace with your repo
+            }
+        }
+
+        stage('Deploy Docker Container') {
+            steps {
+                script {
+                    // Check if Docker is installed (optional but good practice)
+                    sh 'docker --version'
+                    // Execute the Python deployment script
+                    sh 'python deploy_docker.py'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline finished."
+        }
+        success {
+            echo "Deployment successful!"
+        }
+        failure {
+            echo "Deployment failed! Check logs above."
+        }
+    }
+}
